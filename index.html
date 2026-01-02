@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sahay Admin Panel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            /* Animated Background */
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 3D Floating Elements */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(40px);
+            z-index: -1;
+            opacity: 0.6;
+        }
+        .orb-1 {
+            width: 300px; height: 300px;
+            background: #ff00cc;
+            top: -50px; left: -50px;
+            animation: float 6s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 250px; height: 250px;
+            background: #00dbde;
+            bottom: -50px; right: -50px;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        .orb-3 {
+            width: 150px; height: 150px;
+            background: #ffff00;
+            top: 40%; left: 40%;
+            animation: float 10s ease-in-out infinite 1s;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .glass-card:active {
+            transform: scale(0.98);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: #3b82f6;
+            outline: none;
+        }
+
+        /* Utility */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hide { display: none !important; }
+        
+        /* Fix scrolling on mobile */
+        .scroll-container {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Background Orbs for 3D Effect -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- ================= AUTH SCREEN ================= -->
+    <div id="auth-screen" class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="glass-panel p-8 rounded-3xl shadow-2xl w-full max-w-md relative overflow-hidden">
+            <!-- Decorative circle inside card -->
+            <div class="absolute top-[-50px] right-[-50px] w-32 h-32 bg-blue-500 rounded-full opacity-20 blur-xl"></div>
+
+            <div class="flex justify-center mb-6 relative z-10">
+                <div class="bg-white/80 p-4 rounded-full shadow-lg">
+                    <i class="fas fa-shield-alt text-3xl text-blue-600"></i>
+                </div>
+            </div>
+            <h2 class="text-3xl font-bold text-center text-slate-800 mb-2">Admin Access</h2>
+            <p class="text-center text-slate-600 mb-8 font-medium">Sahay Worker Database</p>
+            
+            <div id="login-error" class="hide bg-red-100/80 border border-red-200 text-red-700 p-3 rounded-xl mb-4 text-sm flex items-center gap-2 backdrop-blur-sm">
+                <i class="fas fa-exclamation-circle"></i> <span id="login-error-msg">Error</span>
+            </div>
+
+            <form id="login-form" class="space-y-5 relative z-10">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 ml-1">Email ID</label>
+                    <input type="email" id="email" value="getsahay.india@gmail.com" class="glass-input w-full p-4 rounded-xl shadow-sm" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 ml-1">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" class="glass-input w-full p-4 rounded-xl shadow-sm" required>
+                </div>
+                <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <span>Enter Dashboard</span> <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD SCREEN ================= -->
+    <div id="dashboard-screen" class="hide min-h-screen flex flex-col pb-10">
+        
+        <!-- Glass Header -->
+        <header class="glass-panel sticky top-4 mx-4 mt-4 rounded-2xl shadow-lg z-50 mb-6">
+            <div class="px-5 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-tr from-blue-600 to-purple-600 p-2 rounded-lg text-white shadow-md">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-extrabold text-slate-800 leading-tight">Sahay</h1>
+                        <p class="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Admin Control</p>
+                    </div>
+                </div>
+                <button id="logout-btn" class="bg-white/50 hover:bg-white p-2.5 rounded-full text-slate-600 hover:text-red-500 transition shadow-sm border border-white/60">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Pills -->
+        <div class="px-4 mb-6">
+            <div class="glass-panel p-1.5 rounded-xl flex shadow-md">
+                <button onclick="switchTab('add')" id="tab-add" class="flex-1 py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 bg-white text-blue-600 shadow-sm">
+                    <i class="fas fa-plus-circle"></i> Add New
+                </button>
+                <button onclick="switchTab('list')" id="tab-list" class="flex-1 py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700">
+                    <i class="fas fa-users"></i> Worker List
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 px-4 scroll-container">
+            <div class="max-w-2xl mx-auto pb-10">
+                
+                <!-- ADD WORKER VIEW -->
+                <div id="view-add" class="fade-in">
+                    <div class="glass-panel rounded-3xl p-6 shadow-xl relative overflow-hidden">
+                        
+                        <div class="mb-6">
+                            <h2 class="text-xl font-bold text-slate-800">Add Worker</h2>
+                            <p class="text-sm text-slate-600 font-medium opacity-80">Fill details to populate the app</p>
+                        </div>
+
+                        <div id="form-msg" class="hide mb-4 p-4 rounded-xl text-sm font-medium flex items-center gap-3 shadow-sm border"></div>
+
+                        <form id="add-worker-form" class="space-y-5">
+                            <!-- Name -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 ml-1">Worker Name</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-user text-slate-400"></i>
+                                    </div>
+                                    <input type="text" id="w-name" placeholder="Name" class="glass-input w-full pl-10 p-3.5 rounded-xl shadow-sm" required>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 ml-1">Phone Number</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-phone text-slate-400"></i>
+                                    </div>
+                                    <input type="tel" id="w-phone" placeholder="Mobile" class="glass-input w-full pl-10 p-3.5 rounded-xl shadow-sm" required>
+                                </div>
+                            </div>
+
+                            <!-- Job Type (Formerly Category) -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 ml-1">Job Profile</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-briefcase text-slate-400"></i>
+                                    </div>
+                                    <select id="w-job" class="glass-input w-full pl-10 p-3.5 rounded-xl shadow-sm appearance-none">
+                                        <!-- Options via JS -->
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Location -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 ml-1">City / Area</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-map-marker-alt text-slate-400"></i>
+                                    </div>
+                                    <input type="text" id="w-location" placeholder="Location" class="glass-input w-full pl-10 p-3.5 rounded-xl shadow-sm" required>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 ml-1">Details (Optional)</label>
+                                <textarea id="w-desc" rows="2" placeholder="Skills, Experience..." class="glass-input w-full p-3.5 rounded-xl shadow-sm"></textarea>
+                            </div>
+
+                            <div class="pt-2">
+                                <button type="submit" id="save-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/40 transition-all active:scale-95 flex justify-center items-center gap-2">
+                                    <i class="fas fa-check-circle"></i> <span>Save to Database</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- LIST WORKER VIEW -->
+                <div id="view-list" class="hide fade-in">
+                    <div class="flex justify-between items-center mb-4 px-2">
+                        <h2 class="text-lg font-bold text-white drop-shadow-md">Active Workers</h2>
+                        <button onclick="fetchWorkers()" class="bg-white/20 hover:bg-white/40 text-white p-2 rounded-full backdrop-blur-md transition shadow-sm border border-white/30">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+
+                    <div id="loading-spinner" class="hide py-10 flex justify-center">
+                        <div class="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    </div>
+
+                    <div id="workers-container" class="grid grid-cols-1 gap-4">
+                        <!-- Cards injected here -->
+                    </div>
+                    
+                    <div id="empty-state" class="hide text-center py-12 glass-panel rounded-2xl mx-2">
+                        <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-search text-2xl text-blue-300"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium">No workers in database.</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- USER CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCwCbwWE04uOvMtI-4mrrQutnM65Fgxa4",
+            authDomain: "sahay-f4c45.firebaseapp.com",
+            databaseURL: "https://sahay-f4c45-default-rtdb.firebaseio.com",
+            projectId: "sahay-f4c45",
+            storageBucket: "sahay-f4c45.firebasestorage.app",
+            messagingSenderId: "215909233174",
+            appId: "1:215909233174:web:97e49dfb8481fe952ebb37",
+            measurementId: "G-SG38X1JRF9"
+        };
+
+        // --- APP STATE ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Collection Name (Root level)
+        const COLLECTION_NAME = 'workers'; 
+
+        const JOB_TYPES = [
+            "Daily Wager (Mazdoor)", "Construction Worker (Raj Mistri)", "Painter", 
+            "Electrician", "Plumber", "Carpenter", "Welder / Fabricator", "Tile Mistri", 
+            "Mechanic", "Driver", "Cook / Chef", "Maid / House Help", "Security Guard", 
+            "Gardener (Mali)", "Sweeper / Cleaner", "AC / Appliance Repair", "Tailor", 
+            "Dhobi (Laundry)", "Pandit / Priest", "Other"
+        ];
+
+        // --- DOM ELEMENTS ---
+        const authScreen = document.getElementById('auth-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const loginError = document.getElementById('login-error');
+        const loginErrorMsg = document.getElementById('login-error-msg');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        const tabAdd = document.getElementById('tab-add');
+        const tabList = document.getElementById('tab-list');
+        const viewAdd = document.getElementById('view-add');
+        const viewList = document.getElementById('view-list');
+        
+        const jobSelect = document.getElementById('w-job');
+        const addWorkerForm = document.getElementById('add-worker-form');
+        const formMsg = document.getElementById('form-msg');
+        const workersContainer = document.getElementById('workers-container');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const emptyState = document.getElementById('empty-state');
+
+        // --- INITIALIZATION ---
+        
+        // Populate Jobs
+        JOB_TYPES.forEach(job => {
+            const opt = document.createElement('option');
+            opt.value = job;
+            opt.textContent = job;
+            jobSelect.appendChild(opt);
+        });
+
+        // Auth Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Check if admin
+                if(user.email === 'getsahay.india@gmail.com') {
+                    showDashboard();
+                } else {
+                    showDashboard(); 
+                }
+            } else {
+                showAuth();
+            }
+        });
+
+       // --- AUTH FUNCTIONS ---
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            setLoading(loginBtn, true, 'Verifying...');
+            loginError.classList.add('hide');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                console.error(error);
+                loginErrorMsg.textContent = "Access Denied: Wrong credentials.";
+                loginError.classList.remove('hide');
+                setLoading(loginBtn, false, 'Enter Dashboard');
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        function showAuth() {
+            authScreen.classList.remove('hide');
+            dashboardScreen.classList.add('hide');
+            setLoading(loginBtn, false, 'Enter Dashboard');
+        }
+
+        function showDashboard() {
+            authScreen.classList.add('hide');
+            dashboardScreen.classList.remove('hide');
+        }
+
+        function setLoading(btn, isLoading, text) {
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = `<div class="loader mr-2"></div> ${text}`;
+                btn.classList.add('opacity-80', 'cursor-not-allowed');
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `<span>${text}</span> <i class="fas fa-arrow-right ml-2"></i>`;
+                if(text.includes('Save')) btn.innerHTML = `<i class="fas fa-check-circle mr-2"></i> <span>${text}</span>`;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            }
+        }
+
+        // --- UI TABS ---
+        
+        window.switchTab = (tab) => {
+            if (tab === 'add') {
+                viewAdd.classList.remove('hide');
+                viewList.classList.add('hide');
+                
+                // Style Active Tab
+                tabAdd.classList.remove('text-slate-500', 'hover:text-slate-700', 'bg-transparent');
+                tabAdd.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                
+                tabList.classList.add('text-slate-500', 'hover:text-slate-700', 'bg-transparent');
+                tabList.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+            } else {
+                viewAdd.classList.add('hide');
+                viewList.classList.remove('hide');
+                
+                // Style Active Tab
+                tabList.classList.remove('text-slate-500', 'hover:text-slate-700', 'bg-transparent');
+                tabList.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                
+                tabAdd.classList.add('text-slate-500', 'hover:text-slate-700', 'bg-transparent');
+                tabAdd.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                
+                window.fetchWorkers();
+            }
+        };
+
+        // --- WORKER MANAGEMENT ---
+
+        addWorkerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-btn');
+            
+            setLoading(btn, true, 'Saving...');
+            formMsg.classList.add('hide');
+
+            const nameVal = document.getElementById('w-name').value;
+            const jobVal = document.getElementById('w-job').value;
+            const locationVal = document.getElementById('w-location').value;
+
+            const newWorker = {
+                name: nameVal,
+                phone: document.getElementById('w-phone').value,
+                job: jobVal, // CHANGED TO 'job'
+                location: locationVal,
+                description: document.getElementById('w-desc').value,
+                createdAt: serverTimestamp(),
+                addedBy: auth.currentUser.email,
+                verified: true
+            };
+
+            // Generate search keywords
+            const keywords = [
+                ...nameVal.toLowerCase().split(' '),
+                ...jobVal.toLowerCase().split(' '),
+                ...locationVal.toLowerCase().split(' ')
+            ];
+            newWorker.searchKeywords = [...new Set(keywords)]; 
+
+            try {
+                await addDoc(collection(db, COLLECTION_NAME), newWorker);
+                
+                addWorkerForm.reset();
+                document.getElementById('w-job').value = JOB_TYPES[0];
+                
+                showMsg('success', 'Worker Saved Successfully!');
+            } catch (error) {
+                console.error("Error adding:", error);
+                showMsg('error', 'Failed to save. Check connection.');
+            } finally {
+                setLoading(btn, false, 'Save to Database');
+            }
+        });
+
+        function showMsg(type, text) {
+            formMsg.textContent = text;
+            formMsg.className = `mb-4 p-4 rounded-xl text-sm font-bold flex items-center gap-3 shadow-sm border ${type === 'success' ? 'bg-green-100/90 text-green-800 border-green-200' : 'bg-red-100/90 text-red-800 border-red-200'}`;
+            formMsg.classList.remove('hide');
+            setTimeout(() => formMsg.classList.add('hide'), 3000);
+        }
+
+        window.fetchWorkers = async () => {
+            loadingSpinner.classList.remove('hide');
+            workersContainer.innerHTML = '';
+            emptyState.classList.add('hide');
+
+            try {
+                const q = query(collection(db, COLLECTION_NAME), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    emptyState.classList.remove('hide');
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        renderWorkerCard(doc.id, doc.data());
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching:", error);
+                workersContainer.innerHTML = `<div class="glass-panel p-4 text-center text-red-600 rounded-xl">Connection Error.</div>`;
+            } finally {
+                loadingSpinner.classList.add('hide');
+            }
+        };
+
+        function renderWorkerCard(id, data) {
+            const card = document.createElement('div');
+            card.className = "glass-card p-4 rounded-2xl shadow-sm hover:shadow-lg relative overflow-hidden group";
+            
+            // Random gradient bar at left
+            const gradients = ['from-blue-400 to-blue-600', 'from-purple-400 to-purple-600', 'from-pink-400 to-pink-600'];
+            const randomGrad = gradients[Math.floor(Math.random() * gradients.length)];
+            
+            // Safe access to properties
+            const name = data.name || 'Unknown';
+            const job = data.job || data.category || 'Worker'; // Fallback for old data
+            const phone = data.phone || '--';
+            const location = data.location || '--';
+
+            card.innerHTML = `
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b ${randomGrad}"></div>
+                <div class="pl-3">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white/60 backdrop-blur-sm text-slate-700 shadow-inner flex items-center justify-center font-bold text-lg border border-white/50">
+                                ${name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm leading-tight">${name}</h3>
+                                <span class="text-[10px] font-bold uppercase tracking-wide text-blue-700 bg-blue-100/50 px-2 py-0.5 rounded-full mt-1 inline-block border border-blue-100">
+                                    ${job}
+                                </span>
+                            </div>
+                        </div>
+                        <button onclick="deleteWorker('${id}', this)" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mt-3">
+                        <div class="bg-white/40 p-2 rounded-lg border border-white/40">
+                            <div class="text-[10px] text-slate-500 uppercase font-bold">Phone</div>
+                            <div class="text-xs font-mono font-semibold text-slate-700">${phone}</div>
+                        </div>
+                        <div class="bg-white/40 p-2 rounded-lg border border-white/40">
+                            <div class="text-[10px] text-slate-500 uppercase font-bold">Location</div>
+                            <div class="text-xs font-semibold text-slate-700 truncate">${location}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            workersContainer.appendChild(card);
+        }
+
+        window.deleteWorker = async (id, btn) => {
+            if(!confirm("Are you sure? This cannot be undone.")) return;
+            
+            const card = btn.closest('.glass-card');
+            card.style.opacity = '0.5';
+            card.style.transform = 'scale(0.95)';
+
+            try {
+                await deleteDoc(doc(db, COLLECTION_NAME, id));
+                card.style.transition = 'all 0.5s ease';
+                card.style.transform = 'translateX(100px)';
+                card.style.opacity = '0';
+                setTimeout(() => {
+                    card.remove();
+                    if(workersContainer.children.length === 0) emptyState.classList.remove('hide');
+                }, 500);
+            } catch (error) {
+                console.error("Error deleting:", error);
+                alert("Failed to delete.");
+                card.style.opacity = '1';
+                card.style.transform = 'scale(1)';
+            }
+        };
+
+    </script>
+</body>
+</html>
