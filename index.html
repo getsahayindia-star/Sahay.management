@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sahay Admin Panel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Loader Spinner */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 20px;
+            height: 20px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hide { display: none !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- ================= AUTH SCREEN ================= -->
+    <div id="auth-screen" class="flex-1 flex flex-col items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border-t-4 border-blue-600">
+            <div class="flex justify-center mb-6">
+                <div class="bg-blue-100 p-4 rounded-full">
+                    <i class="fas fa-user-shield text-2xl text-blue-600"></i>
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold text-center text-slate-800 mb-2">Sahay Admin</h2>
+            <p class="text-center text-slate-500 mb-6">Login to manage workers</p>
+            
+            <div id="login-error" class="hide bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i> <span id="login-error-msg">Error</span>
+            </div>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                    <input type="email" id="email" value="getsahay.india@gmail.com" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" required>
+                </div>
+                <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all shadow-md active:scale-95 flex justify-center items-center gap-2">
+                    <span>Login Dashboard</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= DASHBOARD SCREEN ================= -->
+    <div id="dashboard-screen" class="hide flex-col h-full">
+        
+        <!-- Header -->
+        <header class="bg-white shadow-sm z-10 sticky top-0">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-600 p-1.5 rounded text-white">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h1 class="text-lg font-bold text-slate-800">Sahay <span class="text-blue-600 font-normal">Manager</span></h1>
+                </div>
+                <button id="logout-btn" class="text-slate-500 hover:text-red-600 transition">
+                    <i class="fas fa-sign-out-alt text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Tabs -->
+        <div class="bg-white border-b border-slate-200">
+            <div class="max-w-6xl mx-auto px-4 flex gap-6">
+                <button onclick="switchTab('add')" id="tab-add" class="py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600 transition-colors flex items-center gap-2">
+                    <i class="fas fa-user-plus"></i> Add Worker
+                </button>
+                <button onclick="switchTab('list')" id="tab-list" class="py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> View List
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content (Scrollable) -->
+        <main class="flex-1 overflow-y-auto bg-slate-50 p-4">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- ADD WORKER VIEW -->
+                <div id="view-add">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                        <div class="mb-5 border-b border-slate-100 pb-3">
+                            <h2 class="text-lg font-bold text-slate-800">Add New Worker</h2>
+                            <p class="text-xs text-slate-400">Add details of workers from social media/offline.</p>
+                        </div>
+
+                        <div id="form-msg" class="hide mb-4 p-3 rounded-lg text-sm flex items-center gap-2"></div>
+
+                        <form id="add-worker-form" class="space-y-4">
+                            <!-- Name & Phone -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1 block">Full Name</label>
+                                    <input type="text" id="w-name" placeholder="e.g. Ramesh Kumar" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-blue-500 outline-none transition" required>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1 block">Mobile Number</label>
+                                    <input type="tel" id="w-phone" placeholder="+91 98XXX XXXXX" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-blue-500 outline-none transition" required>
+                                </div>
+                            </div>
+
+                            <!-- Category & Location -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1 block">Job Type</label>
+                                    <select id="w-category" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-blue-500 outline-none transition">
+                                        <!-- Options injected by JS -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-600 uppercase mb-1 block">Location / Area</label>
+                                    <input type="text" id="w-location" placeholder="e.g. Karol Bagh, Delhi" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-blue-500 outline-none transition" required>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-semibold text-slate-600 uppercase mb-1 block">Description (Optional)</label>
+                                <textarea id="w-desc" rows="2" placeholder="Experience, timing, special skills..." class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-blue-500 outline-none transition"></textarea>
+                            </div>
+
+                            <div class="pt-2">
+                                <button type="submit" id="save-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg shadow-blue-200 transition active:scale-[0.98] flex justify-center items-center gap-2">
+                                    <i class="fas fa-save"></i> <span>Save Worker</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- LIST WORKER VIEW -->
+                <div id="view-list" class="hide">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-slate-800">Database</h2>
+                        <button onclick="fetchWorkers()" class="text-blue-600 hover:bg-blue-50 p-2 rounded-full transition">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+
+                    <div id="loading-spinner" class="hide py-10 flex justify-center">
+                        <div class="loader"></div>
+                    </div>
+
+                    <div id="workers-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Workers injected here -->
+                    </div>
+                    
+                    <div id="empty-state" class="hide text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+                        <i class="fas fa-folder-open text-4xl text-slate-300 mb-3"></i>
+                        <p class="text-slate-500">No workers found.</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- USER CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCwCbwWE04uOvMtI-4mrrQutnM65Fgxa4",
+            authDomain: "sahay-f4c45.firebaseapp.com",
+            databaseURL: "https://sahay-f4c45-default-rtdb.firebaseio.com",
+            projectId: "sahay-f4c45",
+            storageBucket: "sahay-f4c45.firebasestorage.app",
+            messagingSenderId: "215909233174",
+            appId: "1:215909233174:web:97e49dfb8481fe952ebb37",
+            measurementId: "G-SG38X1JRF9"
+        };
+
+        // --- APP STATE ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Use 'workers' collection at root for production ease
+        const COLLECTION_NAME = 'workers'; 
+
+        const JOB_CATEGORIES = [
+            "Daily Wager (Mazdoor)", "Construction Worker (Raj Mistri)", "Painter", 
+            "Electrician", "Plumber", "Carpenter", "Welder / Fabricator", "Tile Mistri", 
+            "Mechanic", "Driver", "Cook / Chef", "Maid / House Help", "Security Guard", 
+            "Gardener (Mali)", "Sweeper / Cleaner", "AC / Appliance Repair", "Tailor", 
+            "Dhobi (Laundry)", "Pandit / Priest", "Other"
+        ];
+
+        // --- DOM ELEMENTS ---
+        const authScreen = document.getElementById('auth-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const loginError = document.getElementById('login-error');
+        const loginErrorMsg = document.getElementById('login-error-msg');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        const tabAdd = document.getElementById('tab-add');
+        const tabList = document.getElementById('tab-list');
+        const viewAdd = document.getElementById('view-add');
+        const viewList = document.getElementById('view-list');
+        
+        const categorySelect = document.getElementById('w-category');
+        const addWorkerForm = document.getElementById('add-worker-form');
+        const formMsg = document.getElementById('form-msg');
+        const workersContainer = document.getElementById('workers-container');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const emptyState = document.getElementById('empty-state');
+
+        // --- INITIALIZATION ---
+        
+        // Populate Categories
+        JOB_CATEGORIES.forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat;
+            categorySelect.appendChild(opt);
+        });
+
+        // Auth Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Check if it's the admin email (Optional but good for UI safety)
+                if(user.email === 'getsahay.india@gmail.com') {
+                    showDashboard();
+                } else {
+                    // Allow login but maybe warn? For now, we trust the login credentials
+                    showDashboard(); 
+                }
+            } else {
+                showAuth();
+            }
+        });
+
+        // --- AUTH FUNCTIONS ---
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            setLoading(loginBtn, true, 'Verifying...');
+            loginError.classList.add('hide');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Listener handles transition
+            } catch (error) {
+                console.error(error);
+                loginErrorMsg.textContent = "Invalid password or email.";
+                loginError.classList.remove('hide');
+                setLoading(loginBtn, false, 'Login Dashboard');
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        function showAuth() {
+            authScreen.classList.remove('hide');
+            dashboardScreen.classList.add('hide');
+            setLoading(loginBtn, false, 'Login Dashboard');
+        }
+
+        function showDashboard() {
+            authScreen.classList.add('hide');
+            dashboardScreen.classList.remove('hide');
+            document.body.classList.remove('bg-slate-50'); // minor tweak if needed
+        }
+
+        function setLoading(btn, isLoading, text) {
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = `<div class="loader mr-2"></div> ${text}`;
+                btn.classList.add('opacity-70');
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = text;
+                btn.classList.remove('opacity-70');
+            }
+        }
+
+        // --- UI TABS ---
+        
+        window.switchTab = (tab) => {
+            if (tab === 'add') {
+                viewAdd.classList.remove('hide');
+                viewList.classList.add('hide');
+                tabAdd.classList.add('border-blue-600', 'text-blue-600');
+                tabAdd.classList.remove('border-transparent', 'text-slate-500');
+                tabList.classList.remove('border-blue-600', 'text-blue-600');
+                tabList.classList.add('border-transparent', 'text-slate-500');
+            } else {
+                viewAdd.classList.add('hide');
+                viewList.classList.remove('hide');
+                tabList.classList.add('border-blue-600', 'text-blue-600');
+                tabList.classList.remove('border-transparent', 'text-slate-500');
+                tabAdd.classList.remove('border-blue-600', 'text-blue-600');
+                tabAdd.classList.add('border-transparent', 'text-slate-500');
+                window.fetchWorkers();
+            }
+        };
+     // --- WORKER MANAGEMENT ---
+
+        addWorkerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('save-btn');
+            const originalBtnText = btn.innerHTML;
+            
+            setLoading(btn, true, 'Saving...');
+            formMsg.classList.add('hide');
+
+            const newWorker = {
+                name: document.getElementById('w-name').value,
+                phone: document.getElementById('w-phone').value,
+                job: document.getElementById('w-job').value,
+                location: document.getElementById('w-location').value,
+                description: document.getElementById('w-desc').value,
+                createdAt: serverTimestamp(),
+                addedBy: auth.currentUser.email,
+                verified: true // Admin added
+            };
+
+            // Generate search keywords
+            const keywords = [
+                ...newWorker.name.toLowerCase().split(' '),
+                ...newWorker.category.toLowerCase().split(' '),
+                ...newWorker.location.toLowerCase().split(' ')
+            ];
+            newWorker.searchKeywords = [...new Set(keywords)]; // remove duplicates
+
+            try {
+                await addDoc(collection(db, COLLECTION_NAME), newWorker);
+                
+                // Reset form
+                addWorkerForm.reset();
+                document.getElementById('w-category').value = JOB_CATEGORIES[0];
+                
+                showMsg('success', 'Worker added successfully!');
+            } catch (error) {
+                console.error("Error adding:", error);
+                showMsg('error', 'Failed to add worker. Check internet.');
+            } finally {
+                setLoading(btn, false, 'Save Worker');
+                // Restore icon
+                btn.innerHTML = `<i class="fas fa-save mr-2"></i> Save Worker`;
+            }
+        });
+
+        function showMsg(type, text) {
+            formMsg.textContent = text;
+            formMsg.className = `mb-4 p-3 rounded-lg text-sm flex items-center gap-2 ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+            formMsg.classList.remove('hide');
+            setTimeout(() => formMsg.classList.add('hide'), 3000);
+        }
+
+        window.fetchWorkers = async () => {
+            loadingSpinner.classList.remove('hide');
+            workersContainer.innerHTML = '';
+            emptyState.classList.add('hide');
+
+            try {
+                // Simple query to get all
+                const q = query(collection(db, COLLECTION_NAME), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    emptyState.classList.remove('hide');
+                } else {
+                    querySnapshot.forEach((doc) => {
+                        renderWorkerCard(doc.id, doc.data());
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching:", error);
+                // Fallback for when index is missing or other error
+                workersContainer.innerHTML = `<div class="col-span-full text-center text-red-500">Error loading data. Try refreshing.</div>`;
+            } finally {
+                loadingSpinner.classList.add('hide');
+            }
+        };
+
+        function renderWorkerCard(id, data) {
+            const card = document.createElement('div');
+            card.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-all";
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
+                            ${data.name ? data.name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-sm">${data.name}</h3>
+                            <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                                ${data.category}
+                            </span>
+                        </div>
+                    </div>
+                    <button onclick="deleteWorker('${id}', this)" class="text-slate-300 hover:text-red-500 transition p-2">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-1 text-xs text-slate-600 mt-3 pl-1">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-phone-alt text-slate-400 w-4"></i>
+                        <span class="font-mono">${data.phone}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-map-marker-alt text-slate-400 w-4"></i>
+                        <span>${data.location}</span>
+                    </div>
+                </div>
+            `;
+            workersContainer.appendChild(card);
+        }
+
+        window.deleteWorker = async (id, btn) => {
+            if(!confirm("Delete this worker permanently?")) return;
+            
+            // Visual feedback
+            const card = btn.closest('div.bg-white');
+            card.classList.add('opacity-50');
+
+            try {
+                await deleteDoc(doc(db, COLLECTION_NAME, id));
+                card.remove();
+                if(workersContainer.children.length === 0) emptyState.classList.remove('hide');
+            } catch (error) {
+                console.error("Error deleting:", error);
+                alert("Failed to delete.");
+                card.classList.remove('opacity-50');
+            }
+        };
+
+    </script>
+</body>
+</html>
