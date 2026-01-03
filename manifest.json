@@ -1,0 +1,22 @@
+{
+  "name": "Sahay - The Helper",
+  "short_name": "Sahay",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e0c3fc",
+  "theme_color": "#764ba2",
+  "orientation": "portrait",
+  "description": "Find local workers or get hired instantly.",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
